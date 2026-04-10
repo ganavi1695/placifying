@@ -20,8 +20,20 @@ export default function ProfilePage({ setIsProfileComplete }) {
       setErrors(newErrors);
       return;
     }
+
+    // ✅ Convert timeline to months
+    let months = timelineValue;
+    if (timelineUnit === "years") {
+      months = timelineValue * 12;
+    }
+
+    // ✅ Store timeline in localStorage
+    localStorage.setItem("timeline", `${months} months`);
+
     setErrors({});
     setIsProfileComplete(true);
+
+    // go to domain selection
     navigate('/selection');
   };
 
@@ -30,10 +42,18 @@ export default function ProfilePage({ setIsProfileComplete }) {
       <div className="space-y-10">
         <div className="space-y-4">
           <p className="text-sm uppercase tracking-[0.3em] text-teal-600 dark:text-teal-300">Profile setup</p>
-          <h2 className="text-3xl font-semibold text-slate-900 dark:text-slate-50">Tell us about yourself to personalize your learning path.</h2>
-          <p className="text-slate-600 dark:text-slate-300">Complete your profile in a few steps and let AI recommend the best roadmap for your goals.</p>
+          <h2 className="text-3xl font-semibold text-slate-900 dark:text-slate-50">
+            Tell us about yourself to personalize your learning path.
+          </h2>
+          <p className="text-slate-600 dark:text-slate-300">
+            Complete your profile in a few steps and let AI recommend the best roadmap for your goals.
+          </p>
+
           <div className="space-y-4 rounded-3xl border border-slate-300 bg-gradient-to-br from-white to-blue-50 p-6 dark:border-slate-600 dark:from-slate-800 dark:to-slate-800">
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">Full name</label>
+
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">
+              Full name
+            </label>
             <input
               value={name}
               onChange={(e) => setName(e.target.value)}
@@ -41,7 +61,10 @@ export default function ProfilePage({ setIsProfileComplete }) {
               className="w-full rounded-3xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-teal-500 focus:bg-teal-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-50 dark:focus:border-teal-400"
             />
             {errors.name && <p className="text-sm text-red-600 dark:text-red-400">{errors.name}</p>}
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">Date of birth</label>
+
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">
+              Date of birth
+            </label>
             <input
               type="date"
               value={dob}
@@ -49,7 +72,11 @@ export default function ProfilePage({ setIsProfileComplete }) {
               className="w-full rounded-3xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-teal-500 focus:bg-teal-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-50 dark:focus:border-teal-400"
             />
             {errors.dob && <p className="text-sm text-red-600 dark:text-red-400">{errors.dob}</p>}
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">Target timeline</label>
+
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">
+              Target timeline
+            </label>
+
             <div className="flex gap-4">
               <input
                 type="number"
@@ -58,6 +85,7 @@ export default function ProfilePage({ setIsProfileComplete }) {
                 placeholder="6"
                 className="flex-1 rounded-3xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-teal-500 focus:bg-teal-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-50 dark:focus:border-teal-400"
               />
+
               <select
                 value={timelineUnit}
                 onChange={(e) => setTimelineUnit(e.target.value)}
@@ -67,8 +95,13 @@ export default function ProfilePage({ setIsProfileComplete }) {
                 <option value="years">Years</option>
               </select>
             </div>
+
             {errors.timeline && <p className="text-sm text-red-600 dark:text-red-400">{errors.timeline}</p>}
-            <Button onClick={handleSaveProfile} className="w-full">Save profile</Button>
+
+            <Button onClick={handleSaveProfile} className="w-full">
+              Save profile
+            </Button>
+
           </div>
         </div>
       </div>
