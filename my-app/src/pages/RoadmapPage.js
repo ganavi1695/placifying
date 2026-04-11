@@ -6,216 +6,196 @@ export default function RoadmapPage() {
   const { name } = useParams();
 
   const [domain, setDomain] = useState("");
-  const [journeyStarted, setJourneyStarted] = useState(false);
-  const [learningStarted, setLearningStarted] = useState(false);
+  const [roadmapPlan, setRoadmapPlan] = useState([]);
   const [currentDay, setCurrentDay] = useState(1);
+  const [completedTasks, setCompletedTasks] = useState({});
 
   const timeline = localStorage.getItem("timeline") || "3 months";
 
-  let totalDays = 90;
-  if (timeline.includes("month")) totalDays = parseInt(timeline) * 30;
-  else if (timeline.includes("year")) totalDays = parseInt(timeline) * 365;
-
+  // 🔥 DOMAIN
   useEffect(() => {
     const newDomain = name?.toLowerCase();
-    const prevDomain = localStorage.getItem("selectedDomain");
-
-    if (newDomain && prevDomain !== newDomain) {
-      localStorage.setItem("selectedDomain", newDomain);
-
-      localStorage.setItem("journeyStarted", "false");
-      localStorage.setItem("learningStarted", "false");
-      localStorage.setItem("currentDay", "1");
-      localStorage.setItem("carryForward", "[]");
-      localStorage.removeItem("roadmapPlan");
-
-      setJourneyStarted(false);
-      setLearningStarted(false);
-      setCurrentDay(1);
-    } else {
-      setJourneyStarted(localStorage.getItem("journeyStarted") === "true");
-      setLearningStarted(localStorage.getItem("learningStarted") === "true");
-      setCurrentDay(parseInt(localStorage.getItem("currentDay") || "1"));
-    }
-
     setDomain(newDomain);
   }, [name]);
 
-  // 🔥 MULTI-DOMAIN SUBTOPICS
+  // 🔥 TOPICS
   const topicMap = {
+    "web-development": [
+  "HTML Basics", "Semantic HTML", "Forms & Validation",
+  "CSS Basics", "Flexbox", "Grid", "Responsive Design",
+  "JavaScript Basics", "ES6+", "DOM Manipulation",
+  "Event Handling", "Async JS", "Fetch API",
+  "React Basics", "Components", "Props & State",
+  "Hooks", "Routing", "Context API",
+  "Node.js", "Express.js", "REST APIs",
+  "Authentication (JWT)", "MongoDB",
+  "Deployment (Vercel/Netlify)", "Full Stack Project"
+],
+    "ai-and-ml": [
+  "Python Basics", "NumPy", "Pandas",
+  "Data Visualization (Matplotlib, Seaborn)",
+  "Statistics Basics", "Probability",
+  "Data Preprocessing", "Feature Engineering",
+  "Supervised Learning", "Regression",
+  "Classification", "Model Evaluation",
+  "Unsupervised Learning", "Clustering",
+  "Deep Learning Basics", "Neural Networks",
+  "TensorFlow / PyTorch",
+  "NLP Basics", "Computer Vision",
+  "Model Deployment", "ML Project"
+],
+"data-science": [
+  "Python", "NumPy", "Pandas",
+  "Data Cleaning", "Data Wrangling",
+  "EDA (Exploratory Data Analysis)",
+  "Visualization", "Statistics",
+  "SQL Basics", "Advanced SQL",
+  "Machine Learning Basics",
+  "Regression", "Classification",
+  "Time Series Analysis",
+  "Business Analytics",
+  "Dashboarding (Power BI/Tableau)",
+  "End-to-End Data Project"
+],
+"cloud-and-devops": [
+  "Linux Basics", "Shell Scripting",
+  "Networking Basics",
+  "Git & GitHub",
+  "Docker", "Containers",
+  "CI/CD Pipelines",
+  "AWS Basics", "EC2", "S3",
+  "IAM & Security",
+  "Kubernetes Basics",
+  "Monitoring (Prometheus, Grafana)",
+  "Logging",
+  "Infrastructure as Code",
+  "Deployment Strategies",
+  "DevOps Project"
+],
+"cybersecurity": [
+  "Networking Basics", "OSI Model",
+  "Linux Security",
+  "Cryptography Basics",
+  "Web Security",
+  "OWASP Top 10",
+  "Authentication & Authorization",
+  "Ethical Hacking",
+  "Penetration Testing",
+  "Security Tools (Nmap, Burp Suite)",
+  "Malware Basics",
+  "Incident Response",
+  "Risk Management",
+  "Security Auditing",
+  "Cybersecurity Project"
+],
+"mobile-development": [
+  "Programming Basics (Java/Kotlin)",
+  "Android Studio Setup",
+  "UI Design Principles",
+  "Layouts & Views",
+  "Navigation",
+  "API Integration",
+  "Database (SQLite)",
+  "Firebase",
+  "Authentication",
+  "Push Notifications",
+  "App Performance Optimization",
+  "Testing",
+  "Publishing App",
+  "Mobile App Project"
+],
+"blockchain": [
+  "Blockchain Basics",
+  "Cryptography",
+  "Bitcoin Fundamentals",
+  "Ethereum",
+  "Smart Contracts",
+  "Solidity",
+  "DApps",
+  "Web3.js / Ethers.js",
+  "Wallet Integration",
+  "Gas Fees",
+  "Security Best Practices",
+  "Testing Contracts",
+  "Blockchain Project"
+],
+"ui-ux-design": [
+  "Design Principles",
+  "Color Theory",
+  "Typography",
+  "Wireframing",
+  "Prototyping",
+  "Figma",
+  "User Research",
+  "User Personas",
+  "UX Flow",
+  "Usability Testing",
+  "Accessibility",
+  "Design Systems",
+  "UI Components",
+  "Design Project"
+],
+"big-data": [
+  "Big Data Fundamentals",
+  "Types of Data (Structured / Unstructured)",
+  "Data Warehousing Concepts",
+  "Hadoop Ecosystem Overview",
+  "HDFS (Hadoop Distributed File System)",
+  "MapReduce Programming",
+  "Apache Spark Basics",
+  "Spark RDDs & DataFrames",
+  "Spark SQL",
+  "Apache Kafka (Streaming)",
+  "Real-Time Data Processing",
+  "ETL Pipelines",
+  "Data Ingestion Tools",
+  "NoSQL Databases (Cassandra, HBase)",
+  "Data Lake vs Data Warehouse",
+  "Distributed Computing Concepts",
+  "Cloud Big Data (AWS / GCP)",
+  "Data Pipeline Architecture",
+  "Performance Optimization",
+  "Big Data Security",
+  "Big Data Project (End-to-End)"
+],
+"networking": [
+  "OSI Model",
+  "TCP/IP",
+  "IP Addressing",
+  "Subnetting",
+  "Routing",
+  "Switching",
+  "DNS",
+  "HTTP/HTTPS",
+  "Firewalls",
+  "VPN",
+  "Network Security",
+  "Troubleshooting",
+  "Networking Tools",
+  "Networking Project"
+]
+  };
 
-  "ai-and-ml": [
-    ["Python Basics → Datatypes, Variables"],
-    ["Loops, Conditions"],
-    ["Functions, Lambda"],
-    ["NumPy"],
-    ["Pandas"],
-    ["Visualization"],
-    ["Statistics"],
-    ["ML Basics"],
-    ["Regression"],
-    ["Model Evaluation"],
-    ["Deep Learning"],
-    ["Project"]
-  ],
+  const topics = topicMap[domain] || ["Basics"];
 
-  "web-development": [
-    ["HTML → Structure, Forms"],
-    ["CSS → Box Model"],
-    ["Flexbox, Grid"],
-    ["JavaScript Basics"],
-    ["DOM"],
-    ["ES6"],
-    ["React"],
-    ["Hooks"],
-    ["API"],
-    ["Node.js"],
-    ["MongoDB"],
-    ["Project"]
-  ],
-
-  "cloud-and-devops": [
-    ["Linux Basics"],
-    ["Networking"],
-    ["Git"],
-    ["Docker"],
-    ["CI/CD"],
-    ["AWS EC2"],
-    ["S3"],
-    ["Kubernetes"],
-    ["Monitoring"],
-    ["Security"],
-    ["Deployment"],
-    ["Project"]
-  ],
-
-  "cybersecurity": [
-    ["Networking Basics"],
-    ["Cryptography"],
-    ["Linux Security"],
-    ["Web Security"],
-    ["OWASP"],
-    ["Ethical Hacking"],
-    ["Pen Testing"],
-    ["Tools"],
-    ["Malware"],
-    ["Incident Response"],
-    ["Auditing"],
-    ["Project"]
-  ],
-
-  "data-science": [
-    ["Python"],
-    ["NumPy"],
-    ["Pandas"],
-    ["Data Cleaning"],
-    ["Visualization"],
-    ["Statistics"],
-    ["EDA"],
-    ["ML Basics"],
-    ["Regression"],
-    ["Classification"],
-    ["Projects"],
-    ["Deployment"]
-  ],
-
-  "mobile-development": [
-    ["Programming Basics"],
-    ["Java/Kotlin"],
-    ["Android Studio"],
-    ["UI Design"],
-    ["Layouts"],
-    ["API Integration"],
-    ["Database"],
-    ["Firebase"],
-    ["Testing"],
-    ["Optimization"],
-    ["Deployment"],
-    ["Project"]
-  ],
-
-  "blockchain": [
-    ["Blockchain Basics"],
-    ["Cryptography"],
-    ["Bitcoin"],
-    ["Ethereum"],
-    ["Smart Contracts"],
-    ["Solidity"],
-    ["DApps"],
-    ["Web3"],
-    ["Security"],
-    ["Gas Fees"],
-    ["Testing"],
-    ["Project"]
-  ],
-
-  "ui-ux-design": [
-    ["Design Principles"],
-    ["Color Theory"],
-    ["Typography"],
-    ["Wireframing"],
-    ["Prototyping"],
-    ["Figma"],
-    ["User Research"],
-    ["UX Flow"],
-    ["Testing"],
-    ["Accessibility"],
-    ["Design System"],
-    ["Project"]
-  ],
-
-  "big-data": [
-    ["Big Data Basics"],
-    ["Hadoop"],
-    ["MapReduce"],
-    ["Spark"],
-    ["Kafka"],
-    ["Data Pipelines"],
-    ["ETL"],
-    ["Storage"],
-    ["Analytics"],
-    ["Scaling"],
-    ["Cloud Data"],
-    ["Project"]
-  ],
-
-  "networking": [
-    ["OSI Model"],
-    ["TCP/IP"],
-    ["IP Addressing"],
-    ["Routing"],
-    ["Switching"],
-    ["DNS"],
-    ["HTTP/HTTPS"],
-    ["Firewalls"],
-    ["Security"],
-    ["Troubleshooting"],
-    ["Tools"],
-    ["Project"]
-  ]
-};
-
-  const topics = topicMap[domain] || [["Basics"]];
-
-  // 🔥 SMART DISTRIBUTION (3–4 TOPICS PER DAY)
+  // 🚀 GENERATE PLAN (3–5 TASKS / DAY + FULL TIMELINE)
   const generatePlan = () => {
+    let totalDays = 90;
+
+    if (timeline.includes("month")) totalDays = parseInt(timeline) * 30;
+    else if (timeline.includes("year")) totalDays = parseInt(timeline) * 365;
+
     const plan = [];
-    const flatTopics = topics.flat();
     let index = 0;
 
-    for (let day = 1; day <= totalDays; day++) {
+    for (let day = 0; day < totalDays; day++) {
       const daily = [];
-      const count = 3 + (day % 2); // 3 or 4
+
+      const count = 3 + Math.floor(Math.random() * 3); // 3–5 tasks
 
       for (let i = 0; i < count; i++) {
-        if (index < flatTopics.length) {
-          daily.push(flatTopics[index]);
-          index++;
-        }
-      }
-
-      if (daily.length === 0) {
-        daily.push("Revision / Practice");
+        daily.push(topics[index % topics.length]);
+        index++;
       }
 
       plan.push(daily);
@@ -224,95 +204,130 @@ export default function RoadmapPage() {
     return plan;
   };
 
+  // ✅ INIT PLAN
   useEffect(() => {
-    if (!localStorage.getItem("roadmapPlan") && domain) {
+    if (domain) {
       const plan = generatePlan();
-      localStorage.setItem("roadmapPlan", JSON.stringify(plan));
+      setRoadmapPlan(plan);
+      sessionStorage.setItem("roadmapPlan", JSON.stringify(plan));
+      sessionStorage.setItem("currentDay", "1");
+      sessionStorage.setItem("completedTasks", "{}");
+      setCurrentDay(1);
+      setCompletedTasks({});
     }
   }, [domain]);
 
-  const roadmapPlan = JSON.parse(localStorage.getItem("roadmapPlan") || "[]");
+  // ✅ LOAD STATE
+  useEffect(() => {
+    const savedPlan = JSON.parse(sessionStorage.getItem("roadmapPlan") || "[]");
+    const savedTasks = JSON.parse(sessionStorage.getItem("completedTasks") || "{}");
+    const savedDay = parseInt(sessionStorage.getItem("currentDay") || "1");
 
+    if (savedPlan.length) setRoadmapPlan(savedPlan);
+    setCompletedTasks(savedTasks);
+    setCurrentDay(savedDay);
+  }, []);
+
+  // 🔥 GET TASKS (WITH CARRY FORWARD)
+
+  useEffect(() => {
+  const handleUpdate = () => {
+    const updated = JSON.parse(sessionStorage.getItem("completedTasks") || "{}");
+    setCompletedTasks(updated);
+  };
+
+  window.addEventListener("storage", handleUpdate);
+  window.addEventListener("focus", handleUpdate);
+
+  return () => {
+    window.removeEventListener("storage", handleUpdate);
+    window.removeEventListener("focus", handleUpdate);
+  };
+}, []);
   const getTasksForDay = (day) => {
-    const carry = JSON.parse(localStorage.getItem("carryForward") || "[]");
+    const prevIncomplete =
+      (roadmapPlan[day - 2] || []).filter(
+        task => !(completedTasks[day - 1] || []).includes(task)
+      );
 
-    if (day === currentDay) {
-      return [...new Set([...carry, ...(roadmapPlan[day - 1] || [])])];
+    const todayTasks = roadmapPlan[day - 1] || [];
+
+    return [...prevIncomplete, ...todayTasks];
+  };
+
+  // ✅ AUTO NEXT DAY
+  useEffect(() => {
+    const todayTasks = getTasksForDay(currentDay);
+    const completedToday = completedTasks[currentDay] || [];
+
+    if (
+      todayTasks.length > 0 &&
+      todayTasks.every(task => completedToday.includes(task))
+    ) {
+      const nextDay = currentDay + 1;
+      setCurrentDay(nextDay);
+      sessionStorage.setItem("currentDay", nextDay.toString());
     }
+  }, [completedTasks]);
 
-    return roadmapPlan[day - 1] || [];
-  };
+  // ✅ PROGRESS (DAY BASED)
+  // ✅ NEW (TASK-BASED PROGRESS)
+const totalTasks = roadmapPlan.flat().length;
 
-  const handleStartJourney = () => {
-    localStorage.setItem("journeyStarted", "true");
-    setJourneyStarted(true);
-  };
+const completedCount = Object.values(completedTasks)
+  .flat()
+  .length;
 
-  const handleStartToday = () => {
-    localStorage.setItem("learningStarted", "true");
-    setLearningStarted(true);
-  };
-
-  const progress = Math.min((currentDay / totalDays) * 100, 100);
+const progress = totalTasks
+  ? (completedCount / totalTasks) * 100
+  : 0;
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 text-white">
       <Card title="Learning Roadmap">
 
-        {!journeyStarted && (
-          <div className="text-center space-y-4">
-            <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-50">
-              📚 What you will learn
-            </h3>
+        <h2 className="text-xl font-bold capitalize">
+          🚀 {domain}
+        </h2>
 
-            <div className="grid gap-3">
-              {topics.map((t, i) => (
-                <div key={i} className="p-4 rounded-xl border border-slate-300 bg-green-100 dark:border-slate-600 dark:bg-slate-700">
-                  Step {i + 1} → {t.join(", ")}
-                </div>
-              ))}
-            </div>
-
-            <button onClick={handleStartJourney} className="px-6 py-3 bg-teal-500 text-white rounded-xl">
-              Start Journey 🚀
-            </button>
+        {/* PROGRESS */}
+        <div className="mt-4">
+          <div className="w-full bg-slate-700 h-3 rounded-full">
+            <div
+              className="h-3 rounded-full"
+              style={{
+                width: `${progress}%`,
+                background: "linear-gradient(90deg, #22c55e, #4f46e5)"
+              }}
+            />
           </div>
-        )}
+          <p className="text-gray-400 mt-2">
+            {Math.floor(progress)}% completed
+          </p>
+        </div>
 
-        {journeyStarted && !learningStarted && (
-          <div className="text-center">
-            <button onClick={handleStartToday} className="px-6 py-3 bg-teal-600 text-white rounded-xl">
-              Start From Today 📅
-            </button>
-          </div>
-        )}
+        {/* DAY */}
+        <h3 className="mt-4">
+          Day {currentDay} / {roadmapPlan.length || 1}
+        </h3>
 
-        {learningStarted && (
-          <>
-            <div className="mb-4">
-              <div className="w-full bg-slate-200 dark:bg-slate-700 h-3 rounded-full">
-                <div className="bg-teal-500 h-3 rounded-full" style={{ width: `${progress}%` }} />
-              </div>
-              <p>{Math.floor(progress)}% completed</p>
+        {/* TASKS */}
+        <div className="grid gap-3 mt-4">
+          {getTasksForDay(currentDay).map((task, i) => (
+            <div
+              key={i}
+              className="p-4 bg-slate-800 rounded-xl border border-slate-700"
+            >
+              📌 {task}
             </div>
+          ))}
+        </div>
 
-            <h3 className="text-lg font-semibold">
-              📅 Day {currentDay} of {totalDays} days ({timeline})
-            </h3>
-
-            {getTasksForDay(currentDay).map((task, i) => (
-              <div key={i} className="p-4 rounded-xl border bg-green-100 dark:bg-slate-700">
-                👉 {task}
-              </div>
-            ))}
-
-            <Link to="/tasks">
-              <button className="mt-4 px-4 py-2 bg-teal-500 text-white rounded-lg">
-                Go to Tasks →
-              </button>
-            </Link>
-          </>
-        )}
+        <Link to="/tasks">
+          <button className="mt-6 px-6 py-3 bg-teal-500 rounded-xl">
+            Go to Tasks →
+          </button>
+        </Link>
 
       </Card>
     </div>
