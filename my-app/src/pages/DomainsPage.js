@@ -25,10 +25,19 @@ export default function DomainsPage() {
   const [showDomains, setShowDomains] = useState(true);
 
   useEffect(() => {
+    // Only show previously selected domain if user explicitly chose "Change Domain"
+    // Otherwise show all domains for fresh selection
     const stored = localStorage.getItem("selectedDomain");
-    if (stored) {
+    const isChangingDomain = localStorage.getItem("changingDomain") === "true";
+    
+    if (stored && isChangingDomain) {
       setSelectedDomain(stored);
       setShowDomains(false);
+      localStorage.removeItem("changingDomain"); // Clear the flag
+    } else {
+      // Fresh selection - show all domains
+      setShowDomains(true);
+      setSelectedDomain(null);
     }
   }, []);
 
@@ -60,7 +69,10 @@ export default function DomainsPage() {
                 Continue
               </Button>
 
-              <Button variant="ghost" onClick={() => setShowDomains(true)}>
+              <Button variant="ghost" onClick={() => {
+                localStorage.setItem("changingDomain", "true");
+                setShowDomains(true);
+              }}>
                 Change Domain
               </Button>
             </div>
@@ -81,7 +93,7 @@ export default function DomainsPage() {
                   onClick={() => {
                     localStorage.setItem("selectedDomain", url);
                     resetRoadmap();
-                    navigate(`/roadmap/${url}`);
+                    navigate(`/quiz?path=domains&domain=${url}`);
                   }}
                 >
                   <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-50">

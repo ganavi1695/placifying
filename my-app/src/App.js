@@ -60,12 +60,17 @@ function App() {
                   : <Navigate to="/profile" replace />
               } />
 
+              <Route path="/quiz" element={
+                isProfileComplete
+                  ? <QuizPage />
+                  : <Navigate to="/profile" replace />
+              } />
+
               <Route path="/dashboard" element={isPathSelected ? <DashboardPage /> : <Navigate to="/selection" replace />} />
               <Route path="/fundamentals" element={isPathSelected ? <FundamentalsPage /> : <Navigate to="/selection" replace />} />
               <Route path="/topics" element={isPathSelected ? <TopicsPage /> : <Navigate to="/selection" replace />} />
               <Route path="/domains" element={isPathSelected ? <DomainsPage /> : <Navigate to="/selection" replace />} />
               <Route path="/chatbot" element={isPathSelected ? <ChatbotPage /> : <Navigate to="/selection" replace />} />
-              <Route path="/quiz" element={isPathSelected ? <QuizPage /> : <Navigate to="/selection" replace />} />
 
               {/* ✅ FIX: add both routes */}
               <Route path="/roadmap" element={isPathSelected ? <RoadmapPage /> : <Navigate to="/selection" replace />} />
