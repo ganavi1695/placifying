@@ -561,6 +561,16 @@ export default function QuizPage() {
       timelineDays = timelineWeeks * 7;
     }
 
+    localStorage.setItem('quizScore', score);
+    localStorage.setItem('totalQuestions', questions.length);
+
+    const prevXP = parseInt(localStorage.getItem("xp") || "0");
+
+      // Quiz XP
+      const quizXP = score * 5;
+
+      localStorage.setItem("xp", prevXP + quizXP);
+
     const roadmapPlan = generateRoadmap(pathType, domain, timelineWeeks, timelineDays);
     localStorage.setItem('roadmapPlan', JSON.stringify(roadmapPlan));
     localStorage.setItem('currentDay', '1');

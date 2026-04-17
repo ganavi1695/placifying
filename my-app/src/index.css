@@ -31,3 +31,40 @@ select,
 textarea {
   font: inherit;
 }
+
+@keyframes flameGlow {
+  0% {
+    filter: drop-shadow(0 0 5px orange);
+  }
+  50% {
+    filter: drop-shadow(0 0 15px orange);
+  }
+  100% {
+    filter: drop-shadow(0 0 5px orange);
+  }
+}
+
+/* 🔥 Normal flame */
+.flame-animate {
+  animation: flameGlow 1.5s infinite ease-in-out;
+}
+
+/* ❄️ Blue Freeze Flame */
+.blue-flame {
+  animation: blueFlameGlow 1.5s infinite ease-in-out;
+}
+
+@keyframes blueFlameGlow {
+  0% {
+    text-shadow: 0 0 5px #3b82f6, 0 0 10px #60a5fa;
+    transform: scale(1);
+  }
+  50% {
+    text-shadow: 0 0 15px #3b82f6, 0 0 30px #60a5fa;
+    transform: scale(1.15);
+  }
+  100% {
+    text-shadow: 0 0 5px #3b82f6, 0 0 10px #60a5fa;
+    transform: scale(1);
+  }
+}

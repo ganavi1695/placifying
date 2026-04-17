@@ -94,7 +94,31 @@ export default function TasksPage() {
     
     // Navigate to tasks page for the next day (will refresh automatically)
     setTasksCopied(false);
-    navigate('/tasks');
+    navigate('/tasks'); 
+
+    localStorage.setItem("lastCompletedCount", completed);
+    localStorage.setItem("lastTotalTasks", tasks.length);
+
+    // 🧠 XP Calculation
+    const prevXP = parseInt(localStorage.getItem("xp") || "0");
+
+    // XP from tasks
+    const taskXP = completed * 10;
+
+    // Bonus if all tasks completed
+    const bonusXP = remaining.length === 0 ? 20 : 0;
+
+    const totalXP = prevXP + taskXP + bonusXP;
+
+    localStorage.setItem("xp", totalXP);
+
+    // 📊 Store day-wise task completion
+const weeklyData = JSON.parse(localStorage.getItem("weeklyProgress") || "{}");
+
+// currentDay = already available
+weeklyData[currentDay] = completed;
+
+localStorage.setItem("weeklyProgress", JSON.stringify(weeklyData));
   };
 
   return (

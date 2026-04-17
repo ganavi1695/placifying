@@ -6,16 +6,24 @@ export default function SelectionPage({ setIsPathSelected }) {
   const navigate = useNavigate();
 
   const handleSelect = (pathType) => {
-    setIsPathSelected(true);
-    localStorage.setItem('selectedPath', pathType);
-    if (pathType === 'fundamentals') {
-      navigate(`/quiz?path=fundamentals`);
-    } else {
-      // Clear previous domain selection for fresh choice
-      localStorage.removeItem('selectedDomain');
-      navigate('/domains');
-    }
-  };
+  setIsPathSelected(true);
+
+  localStorage.setItem('selectedPath', pathType);
+
+  // 🔥 RESET XP + PROGRESS
+  localStorage.setItem("xp", "0");
+  localStorage.setItem("currentDay", "1");
+  localStorage.setItem("carryForward", JSON.stringify({}));
+  localStorage.setItem("completedDays", JSON.stringify({}));
+  localStorage.setItem("weeklyProgress", JSON.stringify({}));
+
+  if (pathType === 'fundamentals') {
+    navigate(`/quiz?path=fundamentals`);
+  } else {
+    localStorage.removeItem('selectedDomain');
+    navigate('/domains');
+  }
+};
 
   return (
     <div className="space-y-8">

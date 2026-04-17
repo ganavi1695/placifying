@@ -51,6 +51,8 @@ export default function DomainsPage() {
     localStorage.setItem("completedDays", "[]");
     localStorage.setItem("carryForward", "[]");
     localStorage.removeItem("roadmapPlan");
+    localStorage.setItem("freeze", "1"); // reset freeze
+    localStorage.setItem("xp", "0");
   };
 
   return (
@@ -91,10 +93,16 @@ export default function DomainsPage() {
                   className="rounded-[2rem] border border-slate-300 bg-gradient-to-br from-green-100 to-emerald-100 p-6 shadow-md hover:shadow-lg cursor-pointer transition
                   dark:border-slate-600 dark:from-slate-700 dark:to-slate-700"
                   onClick={() => {
-                    localStorage.setItem("selectedDomain", url);
-                    resetRoadmap();
-                    navigate(`/quiz?path=domains&domain=${url}`);
-                  }}
+  localStorage.setItem("selectedDomain", url);
+
+  // 🔥 RESET XP + LEVEL RELATED DATA
+  localStorage.setItem("xp", "0");
+  localStorage.setItem("weeklyProgress", JSON.stringify({}));
+
+  resetRoadmap();
+
+  navigate(`/quiz?path=domains&domain=${url}`);
+}}
                 >
                   <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-50">
                     {domain.title}
