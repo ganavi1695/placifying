@@ -36,6 +36,18 @@ export default function ProfilePage({ setIsProfileComplete }) {
     // go to domain selection
     navigate('/selection');
   };
+  const getProfile = async () => {
+  const token = localStorage.getItem("token");
+
+  const res = await fetch("http://localhost:5000/api/user/profile", {
+    headers: {
+      Authorization: token
+    }
+  });
+
+  const data = await res.json();
+  console.log(data);
+};
 
   return (
     <div className="mx-auto max-w-4xl rounded-[2rem] bg-gradient-to-br from-white to-blue-50 p-8 shadow-lg shadow-slate-200/50 dark:from-slate-800 dark:to-slate-800 dark:shadow-slate-950/50">
