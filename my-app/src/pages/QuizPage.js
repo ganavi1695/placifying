@@ -537,11 +537,58 @@ export default function QuizPage() {
   const navigate = useNavigate();
   const pathType = searchParams.get('path') || 'fundamentals';
   const domain = searchParams.get('domain') || '';
+  const quizType = searchParams.get('type') || 'full';
   
-  const questions = pathType === 'fundamentals' ? fundamentalsQuestions : (domainQuestions[domain] || []);
+  let questions = [];
 
+if (quizType === "today") {
+  const tasks = getTodayTasks();
+  questions = tasks.map((task, i) => ({
+    id: i + 1,
+    question: `What did you learn from: ${task}?`,
+    options: ["Concept A", "Concept B", "Concept C", "Concept D"],
+    answer: "Concept A",
+  }));
+} 
+else if (quizType === "phase") {
+  const tasks = getPhaseTasks();
+  questions = tasks.slice(0, 10).map((task, i) => ({
+    id: i + 1,
+    question: `Phase concept: ${task}?`,
+    options: ["A", "B", "C", "D"],
+    answer: "A",
+  }));
+} 
+else {
+  questions = pathType === 'fundamentals'
+    ? fundamentalsQuestions
+    : (domainQuestions[domain] || []);
+}
   const [selected, setSelected] = useState({});
   const [submitted, setSubmitted] = useState(false);
+  function getTodayTasks () {
+  const currentDay = parseInt(localStorage.getItem("currentDay") || "1");
+  const roadmapPlan = JSON.parse(localStorage.getItem("roadmapPlan") || "[]");
+
+  const allTasks = roadmapPlan.flat();
+  const tasksPerDay = 4;
+
+  const start = (currentDay - 1) * tasksPerDay;
+  return allTasks.slice(start, start + tasksPerDay);
+};
+  function getPhaseTasks (){
+  const roadmapPlan = JSON.parse(localStorage.getItem("roadmapPlan") || "[]");
+
+  // Take completed phases only
+  const completedDays = JSON.parse(localStorage.getItem("completedDays") || "[]");
+
+  const phaseIndex = Math.floor(completedDays.length / 7); // simple grouping
+  return roadmapPlan[phaseIndex] || [];
+};
+  function getAllTasks () {
+  const roadmapPlan = JSON.parse(localStorage.getItem("roadmapPlan") || "[]");
+  return roadmapPlan.flat();
+};
 
   const score = questions.reduce((acc, question) => {
     return acc + (selected[question.id] === question.answer ? 1 : 0);
@@ -567,10 +614,25 @@ export default function QuizPage() {
     const prevXP = parseInt(localStorage.getItem("xp") || "0");
 
       // Quiz XP
-      const quizXP = score * 5;
+      let multiplier = 1;
+
+if (quizType === "today") multiplier = 1;
+if (quizType === "phase") multiplier = 2;
+if (quizType === "full") multiplier = 3;
+
+const quizXP = score * 5 * multiplier;
 
       localStorage.setItem("xp", prevXP + quizXP);
+const history = JSON.parse(localStorage.getItem("quizHistory") || "[]");
 
+history.push({
+  type: quizType,
+  score,
+  total: questions.length,
+  date: new Date().toISOString(),
+});
+
+localStorage.setItem("quizHistory", JSON.stringify(history));
     const roadmapPlan = generateRoadmap(pathType, domain, timelineWeeks, timelineDays);
     localStorage.setItem('roadmapPlan', JSON.stringify(roadmapPlan));
     localStorage.setItem('currentDay', '1');

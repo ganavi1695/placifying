@@ -26,8 +26,10 @@ export default function LandingPage({ isRegistered, isProfileComplete, isPathSel
     : {
         title: 'Build your career roadmap with AI-powered learning and progress tracking.',
         subtitle: 'Start with registration, choose your specialization, complete guided fundamentals, and track your daily learning journey with a clean modern dashboard.',
-        actionLabel: 'Start your journey',
-        actionTo: '/register',
+        actions: [
+    { label: 'Sign Up', to: '/register' },
+    { label: 'Login', to: '/login' },
+  ],
       };
 
   return (
@@ -44,10 +46,26 @@ export default function LandingPage({ isRegistered, isProfileComplete, isPathSel
             {hero.subtitle}
           </p>
           <div className="flex flex-col gap-4 sm:flex-row">
-            <Link to={hero.actionTo}>
-              <Button className="w-full sm:w-auto">{hero.actionLabel}</Button>
-            </Link>
-          </div>
+  {hero.actions ? (
+    hero.actions.map((action, index) => (
+      <Link key={index} to={action.to}>
+        <Button
+          className={`w-full sm:w-auto ${
+            action.label === 'Login'
+              ? 'bg-white text-slate-900 border border-slate-300 hover:bg-slate-100'
+              : ''
+          }`}
+        >
+          {action.label}
+        </Button>
+      </Link>
+    ))
+  ) : (
+    <Link to={hero.actionTo}>
+      <Button className="w-full sm:w-auto">{hero.actionLabel}</Button>
+    </Link>
+  )}
+</div>
         </div>
         <div className="rounded-[2rem] bg-gradient-to-br from-purple-100 to-pink-100 p-6 shadow-lg shadow-slate-200/50 dark:from-slate-700 dark:to-slate-700 dark:shadow-slate-950/50">
           <div className="mx-auto flex h-[320px] w-[320px] items-center justify-center rounded-[2rem] bg-white p-6 shadow-xl shadow-slate-300/40 dark:bg-slate-800 dark:shadow-slate-950/50">

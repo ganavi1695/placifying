@@ -2,10 +2,9 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import './App.css';
 import './index.css';
 import { useState } from 'react';
-
 import Navbar from './components/Navbar';
 import Sidebar from './components/Sidebar';
-
+import LoginPage from './pages/LoginPage';
 import LandingPage from './pages/LandingPage';
 import RegisterPage from './pages/RegisterPage';
 import ProfilePage from './pages/ProfilePage';
@@ -45,9 +44,8 @@ function App() {
                   isPathSelected={isPathSelected}
                 />
               } />
-
               <Route path="/register" element={<RegisterPage setIsRegistered={setIsRegistered} />} />
-
+              <Route path="/login" element={<LoginPage setIsRegistered={setIsRegistered} />} />
               <Route path="/profile" element={
                 isRegistered
                   ? <ProfilePage setIsProfileComplete={setIsProfileComplete} />
