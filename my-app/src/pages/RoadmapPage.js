@@ -45,7 +45,7 @@ const completionPercentage =
   totalDays > 0
     ? Math.min(100, Math.round((completedCount / totalDays) * 100))
     : 0;
-
+   
 
 
     const getPhaseProgress = (phaseIndex, phaseTasks) => {

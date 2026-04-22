@@ -15,7 +15,7 @@ export default function ProgressPage() {
   const [badges, setBadges] = useState([]);
   const [completedDays, setCompletedDays] = useState([]);
   const [recommendation, setRecommendation] = useState("");
-
+           
   useEffect(() => {
     // 📊 DATA
     const quizScore = parseInt(localStorage.getItem("quizScore") || "0");
