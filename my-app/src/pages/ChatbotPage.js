@@ -1,57 +1,81 @@
 import { useState, useRef, useEffect } from 'react';
 import Button from '../components/Button';
 
-const initialMessages = [
-  { id: 1, role: 'bot', text: 'Hi! I am your study assistant. What topic would you like help with today?' },
-];
-
-const botResponses = {
-  'dbms': 'DBMS is crucial! I recommend starting with normalization, SQL queries, and indexing. Would you like a study plan?',
-  'os': 'Operating Systems is foundational. Focus on process scheduling, memory management, and file systems. Need help with any of these?',
-  'network': 'Great topic! Start with OSI model, TCP/IP, routing, and security. Which area interests you most?',
-  'ai': 'AI and ML is exciting! Begin with Python, libraries like NumPy and Pandas, then move to ML algorithms. Ready to start?',
-  'web': 'Web development is in-demand! Learn HTML/CSS, JavaScript, React, and backend frameworks. What is your focus?',
-  'cloud': 'Cloud and DevOps is essential! Study Docker, Kubernetes, CI/CD, and cloud platforms. Which cloud platform?',
-  'security': 'Cybersecurity is critical! Learn encryption, network security, and ethical hacking. Where to begin?',
-  'default': 'That is a great topic! Would you like a structured learning plan or quick tips? Let me know how I can help!'
-};
-
-const getBotResponse = (userText) => {
-  const text = userText.toLowerCase();
-  if (text.includes('dbms') || text.includes('database') || text.includes('sql')) return botResponses.dbms;
-  if (text.includes('os') || text.includes('operating')) return botResponses.os;
-  if (text.includes('network') || text.includes('cn') || text.includes('tcp') || text.includes('routing')) return botResponses.network;
-  if (text.includes('ai') || text.includes('machine learning') || text.includes('ml')) return botResponses.ai;
-  if (text.includes('web') || text.includes('javascript') || text.includes('react') || text.includes('html')) return botResponses.web;
-  if (text.includes('cloud') || text.includes('devops') || text.includes('docker') || text.includes('kubernetes')) return botResponses.cloud;
-  if (text.includes('security') || text.includes('cybersecurity') || text.includes('encryption')) return botResponses.security;
-  return botResponses.default;
-};
-
 export default function ChatbotPage() {
-  const [messages, setMessages] = useState(initialMessages);
+  const [messages, setMessages] = useState([
+    {
+      id: 1,
+      role: 'bot',
+      text: 'Hi! I am your AI Study Assistant. Ask me anything about programming, DSA, web dev, or career guidance 🚀'
+    }
+  ]);
+
   const [draft, setDraft] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef(null);
 
+  // Auto scroll to latest message
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages]);
+  }, [messages, isLoading]); // Scroll when loading starts too
 
-  const sendMessage = () => {
-    if (!draft.trim()) return;
+  // MAIN FUNCTION
+  const sendMessage = async () => {
+    if (!draft.trim() || isLoading) return; // Prevent double-sending
+
+    const userContent = draft.trim();
+    const userMessage = {
+      id: Date.now(),
+      role: 'user',
+      text: userContent
+    };
+
+    setMessages((prev) => [...prev, userMessage]);
+    setDraft(''); // Clear input immediately for better UX
     setIsLoading(true);
-    const userMessage = { id: Date.now(), role: 'user', text: draft.trim() };
-    setTimeout(() => {
-      const botReply = { id: Date.now() + 1, role: 'bot', text: getBotResponse(draft.trim()) };
-      setMessages((prev) => [...prev, userMessage, botReply]);
+
+    try {
+      // Ensure this URL matches your server.js port
+      const res = await fetch("http://localhost:5000/api/chat", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          message: userContent
+        })
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) throw new Error(data.error || "Server error");
+
+      const botReply = {
+        id: Date.now() + 1,
+        role: 'bot',
+        text: data.reply
+      };
+
+      setMessages((prev) => [...prev, botReply]);
+
+    } catch (error) {
+      console.error("Frontend Error:", error);
+      
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: Date.now() + 1,
+          role: 'bot',
+          text: "⚠️ I'm having trouble connecting to the brain. Please check your internet or try again."
+        }
+      ]);
+    } finally {
       setIsLoading(false);
-    }, 600);
-    setDraft('');
+    }
   };
 
   const handleKeyPress = (e) => {
@@ -62,56 +86,68 @@ export default function ChatbotPage() {
   };
 
   return (
-    <div className="space-y-8">
-      <div className="rounded-[2rem] border border-slate-300 bg-gradient-to-br from-white to-blue-50 p-8 shadow-lg shadow-slate-200/50 dark:border-slate-600 dark:from-slate-800 dark:to-slate-800 dark:shadow-slate-950/50">
-        <h2 className="text-3xl font-semibold text-slate-900 dark:text-slate-50">Study Assistant</h2>
-        <p className="mt-2 text-slate-600 dark:text-slate-300">Ask me anything about your learning path, study tips, or career guidance.</p>
+    <div className="max-w-4xl mx-auto space-y-8 p-4">
+      {/* Header */}
+      <div className="rounded-[2rem] border bg-gradient-to-br from-white to-blue-50 p-8 shadow-sm">
+        <h2 className="text-3xl font-semibold text-gray-800">AI Study Assistant</h2>
+        <p className="mt-2 text-gray-600">
+          Powered by Llama 3 • Focused on your CSE Curriculum
+        </p>
       </div>
 
-      <div className="rounded-[2rem] border border-slate-300 bg-gradient-to-br from-white to-blue-50 p-8 shadow-lg shadow-slate-200/50 dark:border-slate-600 dark:from-slate-800 dark:to-slate-800 dark:shadow-slate-950/50">
-        <div className="flex flex-col h-96 gap-4">
-          <div className="flex-1 overflow-y-auto space-y-4 pr-3">
+      {/* Chat Box */}
+      <div className="rounded-[2rem] border bg-white p-6 shadow-xl relative overflow-hidden">
+        <div className="flex flex-col h-[500px]">
+
+          {/* Messages Container */}
+          <div className="flex-1 overflow-y-auto space-y-4 pr-3 custom-scrollbar">
             {messages.map((message) => (
               <div
                 key={message.id}
                 className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
               >
                 <div
-                  className={`max-w-xs lg:max-w-md rounded-3xl p-5 shadow-sm ${
+                  className={`max-w-[80%] rounded-2xl px-5 py-3 shadow-sm ${
                     message.role === 'bot'
-                      ? 'bg-gradient-to-br from-slate-200 to-slate-100 text-slate-800 dark:from-slate-700 dark:to-slate-600 dark:text-slate-100'
-                      : 'bg-gradient-to-br from-teal-400 to-teal-500 text-white dark:from-teal-600 dark:to-teal-700'
+                      ? 'bg-gray-100 text-gray-800 rounded-tl-none'
+                      : 'bg-teal-600 text-white rounded-tr-none'
                   }`}
                 >
-                  <p className="text-sm leading-relaxed">{message.text}</p>
+                  {/* Preserves line breaks from the AI response */}
+                  <p className="whitespace-pre-wrap leading-relaxed">{message.text}</p>
                 </div>
               </div>
             ))}
+
+            {/* Typing Indicator */}
             {isLoading && (
-              <div className="flex justify-start">
-                <div className="bg-gradient-to-br from-slate-200 to-slate-100 text-slate-800 dark:from-slate-700 dark:to-slate-600 dark:text-slate-100 rounded-3xl p-5 shadow-sm">
-                  <p className="text-sm">✦ Typing...</p>
+              <div className="flex justify-start animate-pulse">
+                <div className="bg-gray-100 rounded-2xl rounded-tl-none px-5 py-3 text-gray-500 italic">
+                  ✦ Assistant is thinking...
                 </div>
               </div>
             )}
+
             <div ref={messagesEndRef} />
           </div>
 
-          <div className="flex gap-3 pt-4 border-t border-slate-200 dark:border-slate-700">
+          {/* Input Area */}
+          <div className="flex gap-3 pt-6 border-t mt-4">
             <input
               value={draft}
               onChange={(e) => setDraft(e.target.value)}
-              onKeyPress={handleKeyPress}
-              placeholder="Ask about DBMS, AI, Web Dev, Cloud..."
+              onKeyDown={handleKeyPress}
+              placeholder={isLoading ? "Please wait..." : "Ask about DSA, React, Python..."}
               disabled={isLoading}
-              className="flex-1 rounded-3xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-teal-500 focus:bg-teal-50 disabled:opacity-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-50 dark:focus:border-teal-400"
+              className="flex-1 rounded-2xl border border-gray-200 px-5 py-3 focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all"
             />
-            <Button 
-              onClick={sendMessage} 
+
+            <Button
+              onClick={sendMessage}
               disabled={isLoading || !draft.trim()}
-              className="w-auto"
+              className="rounded-2xl px-6 py-3 bg-teal-600 hover:bg-teal-700 transition-colors disabled:bg-gray-400"
             >
-              Send
+              {isLoading ? "..." : "Send"}
             </Button>
           </div>
         </div>
