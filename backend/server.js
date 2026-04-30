@@ -1,11 +1,13 @@
 const express = require("express");
 const dotenv = require("dotenv");
 const cors = require("cors");
+
+dotenv.config();
 const connectDB = require("./config/db");
 
 // 1. Load Environment Variables at the very top
-dotenv.config();
 
+// console.log("DB URI from Env:", process.env.MONGODB_URI); // Should print your string, not undefined
 // 2. Initialize Database
 connectDB();
 
@@ -19,6 +21,7 @@ app.use(express.json()); // Essential for parsing JSON bodies in POST requests
 app.use("/api/chat", require("./routes/chatRoutes"));
 app.use("/api/auth", require("./routes/authRoutes"));
 app.use("/api/user", require("./routes/userRoutes"));
+app.use("/api/quiz", require("./routes/quizRoutes"));
 
 // 5. Basic Health Check (Useful for testing)
 app.get("/", (req, res) => {
