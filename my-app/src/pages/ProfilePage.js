@@ -29,7 +29,7 @@ export default function ProfilePage({ setIsProfileComplete }) {
 
     // ✅ Store timeline in localStorage
     localStorage.setItem("timeline", `${months} months`);
-
+   
     setErrors({});
     setIsProfileComplete(true);
 
