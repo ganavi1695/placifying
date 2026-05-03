@@ -11,125 +11,77 @@ export default function RoadmapPage() {
   const [timeline, setTimeline] = useState('');
 
   useEffect(() => {
-    // Get roadmap from localStorage (generated in QuizPage based on profile timeline)
-    const plan = JSON.parse(localStorage.getItem('roadmapPlan') || '[]');
-    const selectedDomain = localStorage.getItem('selectedDomain') || name || 'web-development';
+    const rawPlan = localStorage.getItem('roadmapPlan');
+    const selectedDomain = localStorage.getItem('selectedDomain') || name || 'blockchain';
     const savedTimeline = localStorage.getItem('timeline') || '3 months';
 
-    setRoadmapPlan(plan);
+    if (rawPlan) {
+      try {
+        const parsedPlan = JSON.parse(rawPlan);
+        // Only set the state if we actually have an array
+        if (Array.isArray(parsedPlan)) {
+          setRoadmapPlan(parsedPlan);
+        }
+      } catch (e) {
+        console.error("Local storage parsing error", e);
+      }
+    }
     setDomain(selectedDomain);
     setTimeline(savedTimeline);
   }, [name]);
 
-  const handleStartLearning = () => {
-    navigate('/tasks');
+  const handleStartLearning = () => navigate('/tasks');
+
+  const getDomainTitle = () => domain.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+
+  const completedDays = JSON.parse(localStorage.getItem("completedDays") || "[]");
+  
+  // Safety check for .flat()
+  const totalTasks = Array.isArray(roadmapPlan) ? roadmapPlan.flat().length : 0;
+  const totalDays = Math.ceil(totalTasks / 4);
+  const completedCount = completedDays.length;
+  const remainingDays = Math.max(totalDays - completedCount, 0);
+
+  const completionPercentage = totalDays > 0 ? Math.min(100, Math.round((completedCount / totalDays) * 100)) : 0;
+
+  const getPhaseProgress = (phaseIndex, phaseTasks) => {
+    const tasksPerDay = 4;
+    let tasksBefore = 0;
+    for (let i = 0; i < phaseIndex; i++) {
+        if (roadmapPlan[i]) tasksBefore += roadmapPlan[i].length;
+    }
+
+    const phaseStartDay = Math.floor(tasksBefore / tasksPerDay) + 1;
+    const phaseTotalDays = Math.ceil(phaseTasks.length / tasksPerDay);
+    let completedInPhase = completedDays.filter(day => day >= phaseStartDay && day < phaseStartDay + phaseTotalDays).length;
+
+    return Math.min(100, Math.round((completedInPhase / phaseTotalDays) * 100));
   };
 
-  const getDomainTitle = () => {
-    if (!domain) return 'Learning';
-    return domain.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+  const getCurrentPhaseIndex = () => {
+    const tasksPerDay = 4;
+    let tasksCovered = completedDays.length * tasksPerDay;
+    let cumulativeTasks = 0;
+    for (let i = 0; i < roadmapPlan.length; i++) {
+      cumulativeTasks += roadmapPlan[i].length;
+      if (tasksCovered < cumulativeTasks) return i;
+    }
+    return Math.max(0, roadmapPlan.length - 1);
   };
 
-  const completedDays = JSON.parse(localStorage.getItem("completedDays") || "[]");
+  const currentPhaseIndex = getCurrentPhaseIndex();
 
-// total days = total tasks / 4 tasks per day
-// total days = total tasks / 4 tasks per day
-const totalTasks = roadmapPlan.flat().length;
-const totalDays = Math.ceil(totalTasks / 4);
+  const isPhaseCompleted = (phaseIndex, phaseTasks) => {
+    return getPhaseProgress(phaseIndex, phaseTasks) === 100;
+  };
 
-const completedCount = completedDays.length;
-const remainingDays = Math.max(totalDays - completedCount, 0);
-
-// ✅ FIXED PROGRESS (BASED ON DAYS)
-const completionPercentage =
-  totalDays > 0
-    ? Math.min(100, Math.round((completedCount / totalDays) * 100))
-    : 0;
-   
-
-
-    const getPhaseProgress = (phaseIndex, phaseTasks) => {
-  const completedDays = JSON.parse(localStorage.getItem("completedDays") || "[]");
-
-  const tasksPerDay = 4;
-
-  // Calculate starting day for this phase
-  let tasksBefore = 0;
-
-  for (let i = 0; i < phaseIndex; i++) {
-    tasksBefore += roadmapPlan[i].length;
-  }
-
-  const phaseStartDay = Math.floor(tasksBefore / tasksPerDay) + 1;
-  const phaseTotalDays = Math.ceil(phaseTasks.length / tasksPerDay);
-
-  let completedInPhase = 0;
-
-  completedDays.forEach((day) => {
-    if (day >= phaseStartDay && day < phaseStartDay + phaseTotalDays) {
-      completedInPhase++;
-    }
-  });
-
-  return Math.min(
-    100,
-    Math.round((completedInPhase / phaseTotalDays) * 100)
-  );
-};
-
-const getCurrentPhaseIndex = () => {
-  const completedDays = JSON.parse(localStorage.getItem("completedDays") || "[]");
-  const tasksPerDay = 4;
-
-  let tasksCovered = completedDays.length * tasksPerDay;
-
-  let cumulativeTasks = 0;
-
-  for (let i = 0; i < roadmapPlan.length; i++) {
-    cumulativeTasks += roadmapPlan[i].length;
-
-    if (tasksCovered < cumulativeTasks) {
-      return i; // current phase
-    }
-  }
-
-  return roadmapPlan.length - 1;
-}; 
-
-const currentPhaseIndex = getCurrentPhaseIndex();
-
-const isPhaseCompleted = (phaseIndex, phaseTasks) => {
-  const completedDays = JSON.parse(localStorage.getItem("completedDays") || "[]");
-  const tasksPerDay = 4;
-
-  // Calculate tasks before this phase
-  let tasksBefore = 0;
-  for (let i = 0; i < phaseIndex; i++) {
-    tasksBefore += roadmapPlan[i].length;
-  }
-
-  const phaseStartDay = Math.floor(tasksBefore / tasksPerDay) + 1;
-  const phaseTotalDays = Math.ceil(phaseTasks.length / tasksPerDay);
-
-  let completedInPhase = 0;
-
-  completedDays.forEach((day) => {
-    if (day >= phaseStartDay && day < phaseStartDay + phaseTotalDays) {
-      completedInPhase++;
-    }
-  });
-
-  return completedInPhase >= phaseTotalDays;
-};
   return (
     <div className="space-y-8">
-      {/* Header */}
-      <div className="rounded-[2rem] border border-slate-300 bg-gradient-to-br from-white to-blue-50 p-8 shadow-lg shadow-slate-200/50 dark:border-slate-600 dark:from-slate-800 dark:to-slate-800 dark:shadow-slate-950/50">
-        <h1 className="text-4xl font-bold text-slate-900 dark:text-slate-50">
-          {getDomainTitle()} Roadmap
-        </h1>
+      {/* Header Info */}
+      <div className="rounded-[2rem] border border-slate-300 bg-gradient-to-br from-white to-blue-50 p-8 shadow-lg dark:border-slate-600 dark:from-slate-800 dark:to-slate-800">
+        <h1 className="text-4xl font-bold text-slate-900 dark:text-slate-50">{getDomainTitle()} Roadmap</h1>
         <p className="mt-3 text-lg text-slate-600 dark:text-slate-300">
-          Your personalized {timeline} learning path with {roadmapPlan.length} phases
+            Your personalized {timeline} learning path with {roadmapPlan.length} phases
         </p>
         
         <div className="mt-6 flex flex-col gap-6 lg:flex-row">
@@ -137,114 +89,61 @@ const isPhaseCompleted = (phaseIndex, phaseTasks) => {
             <p className="text-sm font-medium text-slate-700 dark:text-slate-300">Overall Progress</p>
             <ProgressBar label="Roadmap" value={completionPercentage} />
           </div>
-          <div className="rounded-3xl bg-gradient-to-br from-teal-100 to-teal-50 p-5 dark:from-slate-700 dark:to-slate-700">
+          <div className="rounded-3xl bg-teal-100 p-5 dark:bg-slate-700">
             <p className="text-sm text-slate-700 dark:text-slate-300">Your Timeline</p>
             <p className="mt-2 text-2xl font-bold text-teal-900 dark:text-teal-200">{timeline}</p>
           </div>
-        </div>
-        <div className="rounded-3xl bg-gradient-to-br from-orange-100 to-orange-50 p-5 dark:from-slate-700 dark:to-slate-700">
-  <p className="text-sm text-slate-700 dark:text-slate-300">Days Remaining</p>
-  <p className="mt-2 text-2xl font-bold text-orange-900 dark:text-orange-200">
-    {remainingDays} / {totalDays} days
-  </p>
-
-  <p className="text-xs mt-1 text-slate-600 dark:text-slate-400">
-    {completedCount} days completed
-  </p>
-</div>
-      </div>
-
-      {/* Roadmap Phases */}
-      {roadmapPlan.length > 0 && (
-        <div className="rounded-[2rem] border border-slate-300 bg-gradient-to-br from-white to-blue-50 p-8 shadow-lg shadow-slate-200/50 dark:border-slate-600 dark:from-slate-800 dark:to-slate-800 dark:shadow-slate-950/50">
-          <h2 className="text-2xl font-semibold text-slate-900 dark:text-slate-50">
-            📚 Learning Phases
-          </h2>
-          <p className="mt-2 text-slate-600 dark:text-slate-300">
-            {roadmapPlan.length} phases to master {getDomainTitle().toLowerCase()}
-          </p>
-
-          <div className="mt-8 space-y-4">
-            {roadmapPlan.map((phase, index) => (
-              <div
-                key={index}
-                className={`rounded-3xl border p-6 transition ${
-    isPhaseCompleted(index, phase)
-      ? "border-green-400 bg-gradient-to-br from-green-100 to-emerald-50 dark:from-green-900/20 dark:to-green-900/10"
-      : index === currentPhaseIndex
-      ? "border-teal-400 bg-gradient-to-br from-teal-100 to-blue-50 dark:from-slate-700 dark:to-slate-700 shadow-lg scale-[1.02]"
-      : "border-slate-300 bg-gradient-to-br from-blue-50 to-teal-50 dark:border-slate-600 dark:from-slate-700 dark:to-slate-700"
-  }`}
-              >
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3">
-                      <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-teal-500 text-white font-bold">
-                        {index + 1}
-                      </span>
-                      <div>
-                        <div className="flex items-center gap-3 flex-wrap">
-
-                              <h3 className="font-semibold text-slate-900 dark:text-slate-50">
-                                Phase {index + 1}
-                              </h3>
-
-                              {/* ✅ Completed */}
-                              {isPhaseCompleted(index, phase) && (
-                                <span className="text-xs px-3 py-1 rounded-full bg-green-500 text-white font-medium">
-                                  ✓ Completed
-                                </span>
-                              )}
-
-                              {/* 📍 Current */}
-                              {!isPhaseCompleted(index, phase) && index === currentPhaseIndex && (
-                                <span className="text-xs px-3 py-1 rounded-full bg-teal-500 text-white font-medium">
-                                  You are here 📍
-                                </span>
-                              )}
-
-                            </div>
-                        <div className="mt-3">
-                      <ProgressBar
-                        label={`Progress`}
-                        value={getPhaseProgress(index, phase)}
-                      />
-                    </div>
-                        <p className="text-sm text-slate-600 dark:text-slate-400">
-                          {phase.length} tasks to complete
-                        </p>
-                      </div>
-                    </div>
-                    <div className="mt-4">
-                      <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-                        {phase.slice(0, 4).map((task, taskIdx) => (
-                          <div
-                            key={taskIdx}
-                            className="rounded-2xl bg-white px-3 py-2 text-sm text-slate-700 shadow-sm dark:bg-slate-800 dark:text-slate-300"
-                          >
-                            ✓ {task}
-                          </div>
-                        ))}
-                      </div>
-                      {phase.length > 4 && (
-                        <p className="mt-3 text-sm text-slate-500 dark:text-slate-400">
-                          + {phase.length - 4} more tasks in this phase
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
+          <div className="rounded-3xl bg-orange-100 p-5 dark:bg-slate-700">
+            <p className="text-sm text-slate-700 dark:text-slate-300">Days Remaining</p>
+            <p className="mt-2 text-2xl font-bold text-orange-900 dark:text-orange-200">{remainingDays} / {totalDays} days</p>
           </div>
         </div>
-      )}
+      </div>
 
-      {/* Start Learning Button */}
-      <div className="flex justify-center">
-        <Button onClick={handleStartLearning} className="px-8 py-4 text-lg">
-          Start Learning Journey 🚀
-        </Button>
+      {/* Learning Phases Section */}
+      <div className="rounded-[2rem] border border-slate-300 bg-white p-8 shadow-lg dark:border-slate-600 dark:bg-slate-800">
+        <h2 className="text-2xl font-semibold text-slate-900 dark:text-white mb-6">📚 Learning Phases</h2>
+        
+        {roadmapPlan.length === 0 ? (
+            <div className="text-center py-10 text-slate-500">No phases generated. Complete the quiz to build your roadmap!</div>
+        ) : (
+            <div className="space-y-6">
+            {roadmapPlan.map((phase, index) => (
+                <div key={index} className={`rounded-3xl border p-6 transition-all ${
+                    isPhaseCompleted(index, phase) 
+                    ? 'bg-green-50 border-green-200' 
+                    : index === currentPhaseIndex 
+                    ? 'border-teal-400 bg-blue-50/50 shadow-md scale-[1.01]' 
+                    : 'bg-slate-50 border-slate-200 opacity-80'
+                }`}>
+                <div className="flex items-center gap-4 mb-4">
+                    <span className="h-10 w-10 flex items-center justify-center rounded-full bg-teal-500 text-white font-bold">{index + 1}</span>
+                    <div className="flex-1">
+                        <div className="flex items-center gap-3">
+                            <h3 className="font-bold text-slate-900 dark:text-white">Phase {index + 1}</h3>
+                            {index === currentPhaseIndex && <span className="text-xs bg-teal-500 text-white px-2 py-0.5 rounded-full">Current 📍</span>}
+                            {isPhaseCompleted(index, phase) && <span className="text-xs bg-green-500 text-white px-2 py-0.5 rounded-full">Completed ✓</span>}
+                        </div>
+                        <ProgressBar label="Phase Progress" value={getPhaseProgress(index, phase)} />
+                    </div>
+                </div>
+                {/* Task Grid - Showing first 4 tasks per phase */}
+                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                    {phase.slice(0, 4).map((task, tIdx) => (
+                    <div key={tIdx} className="rounded-xl bg-white p-4 text-sm shadow-sm border border-slate-100 text-slate-700">
+                        <span className="text-teal-600 font-bold mr-2">✓</span> {task}
+                    </div>
+                    ))}
+                </div>
+                {phase.length > 4 && <p className="mt-4 text-xs text-slate-500 italic">+ {phase.length - 4} more technical tasks in this phase</p>}
+                </div>
+            ))}
+            </div>
+        )}
+      </div>
+
+      <div className="flex justify-center pb-10">
+        <Button onClick={handleStartLearning} className="px-10 py-4 text-xl shadow-xl hover:scale-105 transition-transform">Start Learning Journey 🚀</Button>
       </div>
     </div>
   );
