@@ -1,16 +1,35 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Button from '../components/Button';
 
-export default function ProfilePage({ setIsProfileComplete }) {
+export default function ProfilePage({ user, setUser, setIsProfileComplete }) {
   const [name, setName] = useState('');
   const [dob, setDob] = useState('');
   const [timelineValue, setTimelineValue] = useState('');
   const [timelineUnit, setTimelineUnit] = useState('months');
   const [errors, setErrors] = useState({});
+  const [generalError, setGeneralError] = useState('');
   const navigate = useNavigate();
 
-  const handleSaveProfile = () => {
+  useEffect(() => {
+    if (!user) return;
+
+    setName(user.name || '');
+    setDob(user.dob || '');
+
+    if (user.timeline) {
+      const value = Number(user.timeline.split(' ')[0]) || '';
+      if (user.timeline.includes('year')) {
+        setTimelineUnit('years');
+        setTimelineValue(value);
+      } else {
+        setTimelineUnit('months');
+        setTimelineValue(value);
+      }
+    }
+  }, [user]);
+
+  const handleSaveProfile = async () => {
     const newErrors = {};
     if (!name.trim()) newErrors.name = 'Full name is required';
     if (!dob) newErrors.dob = 'Date of birth is required';
@@ -21,33 +40,48 @@ export default function ProfilePage({ setIsProfileComplete }) {
       return;
     }
 
-    // ✅ Convert timeline to months
-    let months = timelineValue;
-    if (timelineUnit === "years") {
-      months = timelineValue * 12;
+    const timelineNumber = Number(timelineValue);
+    let months = timelineNumber;
+    if (timelineUnit === 'years') {
+      months = timelineNumber * 12;
     }
 
-    // ✅ Store timeline in localStorage
-    localStorage.setItem("timeline", `${months} months`);
-   
-    setErrors({});
-    setIsProfileComplete(true);
+    const token = localStorage.getItem('token');
+    if (!token) {
+      setGeneralError('Please log in again to update your profile.');
+      return;
+    }
 
-    // go to domain selection
-    navigate('/selection');
+    try {
+      const res = await fetch('http://localhost:5000/api/user/profile', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: token
+        },
+        body: JSON.stringify({
+          name,
+          dob,
+          timeline: `${months} months`
+        })
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        setGeneralError(data.msg || 'Unable to save profile');
+        return;
+      }
+
+      setUser(data);
+      setIsProfileComplete(true);
+      setErrors({});
+      setGeneralError('');
+      navigate('/selection');
+    } catch (err) {
+      console.error(err);
+      setGeneralError('Something went wrong while saving your profile.');
+    }
   };
-  const getProfile = async () => {
-  const token = localStorage.getItem("token");
-
-  const res = await fetch("http://localhost:5000/api/user/profile", {
-    headers: {
-      Authorization: token
-    }
-  });
-
-  const data = await res.json();
-  console.log(data);
-};
 
   return (
     <div className="mx-auto max-w-4xl rounded-[2rem] bg-gradient-to-br from-white to-blue-50 p-8 shadow-lg shadow-slate-200/50 dark:from-slate-800 dark:to-slate-800 dark:shadow-slate-950/50">
@@ -58,11 +92,10 @@ export default function ProfilePage({ setIsProfileComplete }) {
             Tell us about yourself to personalize your learning path.
           </h2>
           <p className="text-slate-600 dark:text-slate-300">
-            Complete your profile in a few steps and let AI recommend the best roadmap for your goals.
+            Complete your profile in a few steps and let the app tailor the experience to your goals.
           </p>
 
           <div className="space-y-4 rounded-3xl border border-slate-300 bg-gradient-to-br from-white to-blue-50 p-6 dark:border-slate-600 dark:from-slate-800 dark:to-slate-800">
-
             <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">
               Full name
             </label>
@@ -88,7 +121,6 @@ export default function ProfilePage({ setIsProfileComplete }) {
             <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">
               Target timeline
             </label>
-
             <div className="flex gap-4">
               <input
                 type="number"
@@ -97,7 +129,6 @@ export default function ProfilePage({ setIsProfileComplete }) {
                 placeholder="6"
                 className="flex-1 rounded-3xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-teal-500 focus:bg-teal-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-50 dark:focus:border-teal-400"
               />
-
               <select
                 value={timelineUnit}
                 onChange={(e) => setTimelineUnit(e.target.value)}
@@ -107,13 +138,12 @@ export default function ProfilePage({ setIsProfileComplete }) {
                 <option value="years">Years</option>
               </select>
             </div>
-
             {errors.timeline && <p className="text-sm text-red-600 dark:text-red-400">{errors.timeline}</p>}
+            {generalError && <p className="text-sm text-red-600 dark:text-red-400">{generalError}</p>}
 
             <Button onClick={handleSaveProfile} className="w-full">
               Save profile
             </Button>
-
           </div>
         </div>
       </div>

@@ -1,13 +1,14 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import './App.css';
 import './index.css';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Navbar from './components/Navbar';
 import Sidebar from './components/Sidebar';
 import LoginPage from './pages/LoginPage';
 import LandingPage from './pages/LandingPage';
 import RegisterPage from './pages/RegisterPage';
 import ProfilePage from './pages/ProfilePage';
+import UserProfilePage from './pages/UserProfilePage';
 import SelectionPage from './pages/SelectionPage';
 import DashboardPage from './pages/DashboardPage';
 import FundamentalsPage from './pages/FundamentalsPage';
@@ -21,15 +22,54 @@ import RoadmapUpdatePage from './pages/RoadmapUpdatePage';
 import ProgressPage from './pages/ProgressPage';
 
 function App() {
-  const [isRegistered, setIsRegistered] = useState(false);
+  const [user, setUser] = useState(null);
   const [isProfileComplete, setIsProfileComplete] = useState(false);
   const [isPathSelected, setIsPathSelected] = useState(false);
+  const [authChecked, setAuthChecked] = useState(false);
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      setAuthChecked(true);
+      return;
+    }
+
+    const loadUser = async () => {
+      try {
+        const res = await fetch("http://localhost:5000/api/user/profile", {
+          headers: {
+            Authorization: token
+          }
+        });
+
+        if (!res.ok) {
+          localStorage.removeItem("token");
+          setUser(null);
+          setIsProfileComplete(false);
+          setAuthChecked(true);
+          return;
+        }
+
+        const data = await res.json();
+        setUser(data);
+        setIsProfileComplete(Boolean(data.dob && data.timeline));
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setAuthChecked(true);
+      }
+    };
+
+    loadUser();
+  }, []);
+
+  const isRegistered = Boolean(user);
 
   return (
     <Router>
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-teal-50 text-slate-900 dark:bg-gradient-to-br dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 dark:text-slate-50">
 
-        {isPathSelected && <Navbar />}
+        {isPathSelected && <Navbar user={user} setUser={setUser} />}
 
         <div className="md:flex md:items-start">
           {isPathSelected && <Sidebar />}
@@ -44,24 +84,37 @@ function App() {
                   isPathSelected={isPathSelected}
                 />
               } />
-              <Route path="/register" element={<RegisterPage setIsRegistered={setIsRegistered} />} />
-              <Route path="/login" element={<LoginPage setIsRegistered={setIsRegistered} />} />
+              <Route path="/register" element={<RegisterPage setUser={setUser} />} />
+              <Route path="/login" element={<LoginPage setUser={setUser} setIsProfileComplete={setIsProfileComplete} />} />
               <Route path="/profile" element={
-                isRegistered
-                  ? <ProfilePage setIsProfileComplete={setIsProfileComplete} />
-                  : <Navigate to="/register" replace />
+                !authChecked
+                  ? <div className="py-16 text-center text-lg text-slate-500">Loading profile…</div>
+                  : isRegistered
+                    ? <ProfilePage user={user} setUser={setUser} setIsProfileComplete={setIsProfileComplete} />
+                    : <Navigate to="/register" replace />
+              } />
+              <Route path="/user-profile" element={
+                !authChecked
+                  ? <div className="py-16 text-center text-lg text-slate-500">Loading profile…</div>
+                  : isRegistered
+                    ? <UserProfilePage user={user} />
+                    : <Navigate to="/login" replace />
               } />
 
               <Route path="/selection" element={
-                isProfileComplete
-                  ? <SelectionPage setIsPathSelected={setIsPathSelected} />
-                  : <Navigate to="/profile" replace />
+                !authChecked
+                  ? <div className="py-16 text-center text-lg text-slate-500">Loading…</div>
+                  : isRegistered && isProfileComplete
+                    ? <SelectionPage setIsPathSelected={setIsPathSelected} />
+                    : <Navigate to="/profile" replace />
               } />
 
               <Route path="/quiz" element={
-                isProfileComplete
-                  ? <QuizPage />
-                  : <Navigate to="/profile" replace />
+                !authChecked
+                  ? <div className="py-16 text-center text-lg text-slate-500">Loading…</div>
+                  : isRegistered && isProfileComplete
+                    ? <QuizPage />
+                    : <Navigate to="/profile" replace />
               } />
 
               <Route path="/dashboard" element={isPathSelected ? <DashboardPage /> : <Navigate to="/selection" replace />} />
@@ -69,11 +122,8 @@ function App() {
               <Route path="/topics" element={isPathSelected ? <TopicsPage /> : <Navigate to="/selection" replace />} />
               <Route path="/domains" element={isPathSelected ? <DomainsPage /> : <Navigate to="/selection" replace />} />
               <Route path="/chatbot" element={isPathSelected ? <ChatbotPage /> : <Navigate to="/selection" replace />} />
-
-              {/* ✅ FIX: add both routes */}
               <Route path="/roadmap" element={isPathSelected ? <RoadmapPage /> : <Navigate to="/selection" replace />} />
               <Route path="/roadmap/:name" element={isPathSelected ? <RoadmapPage /> : <Navigate to="/selection" replace />} />
-
               <Route path="/tasks" element={isPathSelected ? <TasksPage /> : <Navigate to="/selection" replace />} />
               <Route path="/roadmap-update" element={isPathSelected ? <RoadmapUpdatePage /> : <Navigate to="/selection" replace />} />
               <Route path="/progress" element={isPathSelected ? <ProgressPage /> : <Navigate to="/selection" replace />} />

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Button from '../components/Button';
 
-export default function LoginPage({ setIsRegistered }) {
+export default function LoginPage({ setUser, setIsProfileComplete }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -31,11 +31,33 @@ export default function LoginPage({ setIsRegistered }) {
         return;
       }
 
-      // ✅ Save token
+      if (!data.token) {
+        setError("Login succeeded but no token returned.");
+        return;
+      }
+
       localStorage.setItem("token", data.token);
 
-      setIsRegistered(true);
-      navigate('/DashboardPage');
+      let loggedInUser = data.user;
+      if (!loggedInUser) {
+        const profileRes = await fetch("http://localhost:5000/api/user/profile", {
+          headers: { Authorization: data.token }
+        });
+        if (!profileRes.ok) {
+          setError("Unable to load profile after login.");
+          return;
+        }
+        loggedInUser = await profileRes.json();
+      }
+
+      setUser(loggedInUser);
+      setIsProfileComplete(Boolean(loggedInUser.dob && loggedInUser.timeline));
+
+      if (!loggedInUser.dob || !loggedInUser.timeline) {
+        navigate('/profile');
+      } else {
+        navigate('/selection');
+      }
 
     } catch (err) {
       console.log(err);

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Button from '../components/Button';
 
-export default function RegisterPage({ setIsRegistered }) {
+export default function RegisterPage({ setUser }) {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -32,10 +32,25 @@ export default function RegisterPage({ setIsRegistered }) {
         return;
       }
 
-      alert("Registered successfully 🎉");
+      if (!data.token) {
+        setError("Registration succeeded but no token returned. Please log in.");
+        return;
+      }
 
-      setIsRegistered(true);
-      navigate('/login');
+      localStorage.setItem("token", data.token);
+
+      let registeredUser = data.user;
+      if (!registeredUser) {
+        const profileRes = await fetch("http://localhost:5000/api/user/profile", {
+          headers: { Authorization: data.token }
+        });
+        if (profileRes.ok) {
+          registeredUser = await profileRes.json();
+        }
+      }
+
+      setUser(registeredUser);
+      navigate('/profile');
 
     } catch (err) {
       console.log(err);
