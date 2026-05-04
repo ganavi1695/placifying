@@ -69,7 +69,7 @@ function App() {
     <Router>
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-teal-50 text-slate-900 dark:bg-gradient-to-br dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 dark:text-slate-50">
 
-        {isPathSelected && <Navbar user={user} setUser={setUser} />}
+        {isPathSelected && <Navbar user={user} setUser={setUser} setIsPathSelected={setIsPathSelected} />}
 
         <div className="md:flex md:items-start">
           {isPathSelected && <Sidebar />}
@@ -117,16 +117,16 @@ function App() {
                     : <Navigate to="/profile" replace />
               } />
 
-              <Route path="/dashboard" element={isPathSelected ? <DashboardPage /> : <Navigate to="/selection" replace />} />
-              <Route path="/fundamentals" element={isPathSelected ? <FundamentalsPage /> : <Navigate to="/selection" replace />} />
-              <Route path="/topics" element={isPathSelected ? <TopicsPage /> : <Navigate to="/selection" replace />} />
-              <Route path="/domains" element={isPathSelected ? <DomainsPage /> : <Navigate to="/selection" replace />} />
-              <Route path="/chatbot" element={isPathSelected ? <ChatbotPage /> : <Navigate to="/selection" replace />} />
-              <Route path="/roadmap" element={isPathSelected ? <RoadmapPage /> : <Navigate to="/selection" replace />} />
-              <Route path="/roadmap/:name" element={isPathSelected ? <RoadmapPage /> : <Navigate to="/selection" replace />} />
-              <Route path="/tasks" element={isPathSelected ? <TasksPage /> : <Navigate to="/selection" replace />} />
-              <Route path="/roadmap-update" element={isPathSelected ? <RoadmapUpdatePage /> : <Navigate to="/selection" replace />} />
-              <Route path="/progress" element={isPathSelected ? <ProgressPage /> : <Navigate to="/selection" replace />} />
+              <Route path="/dashboard" element={isRegistered && isPathSelected ? <DashboardPage /> : !isRegistered ? <Navigate to="/login" replace /> : <Navigate to="/selection" replace />} />
+              <Route path="/fundamentals" element={isRegistered && isPathSelected ? <FundamentalsPage /> : !isRegistered ? <Navigate to="/login" replace /> : <Navigate to="/selection" replace />} />
+              <Route path="/topics" element={isRegistered && isPathSelected ? <TopicsPage /> : !isRegistered ? <Navigate to="/login" replace /> : <Navigate to="/selection" replace />} />
+              <Route path="/domains" element={isRegistered && isPathSelected ? <DomainsPage /> : !isRegistered ? <Navigate to="/login" replace /> : <Navigate to="/selection" replace />} />
+              <Route path="/chatbot" element={isRegistered && isPathSelected ? <ChatbotPage /> : !isRegistered ? <Navigate to="/login" replace /> : <Navigate to="/selection" replace />} />
+              <Route path="/roadmap" element={isRegistered && isPathSelected ? <RoadmapPage /> : !isRegistered ? <Navigate to="/login" replace /> : <Navigate to="/selection" replace />} />
+              <Route path="/roadmap/:name" element={isRegistered && isPathSelected ? <RoadmapPage /> : !isRegistered ? <Navigate to="/login" replace /> : <Navigate to="/selection" replace />} />
+              <Route path="/tasks" element={isRegistered && isPathSelected ? <TasksPage /> : !isRegistered ? <Navigate to="/login" replace /> : <Navigate to="/selection" replace />} />
+              <Route path="/roadmap-update" element={isRegistered && isPathSelected ? <RoadmapUpdatePage /> : !isRegistered ? <Navigate to="/login" replace /> : <Navigate to="/selection" replace />} />
+              <Route path="/progress" element={isRegistered && isPathSelected ? <ProgressPage /> : !isRegistered ? <Navigate to="/login" replace /> : <Navigate to="/selection" replace />} />
 
               <Route path="*" element={<Navigate to="/" replace />} />
 

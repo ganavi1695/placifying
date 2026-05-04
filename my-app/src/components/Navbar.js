@@ -8,13 +8,14 @@ const links = [
   { label: 'Roadmap', to: '/roadmap' },
 ];
 
-export default function Navbar({ user, setUser }) {
+export default function Navbar({ user, setUser, setIsPathSelected }) {
   const { isDark, toggleTheme } = useTheme();
   const navigate = useNavigate();
 
   const handleLogout = () => {
     localStorage.removeItem('token');
     setUser(null);
+    setIsPathSelected(false);
     navigate('/');
   };
 
