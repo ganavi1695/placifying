@@ -28,7 +28,6 @@ router.post("/generate", async (req, res) => {
 router.post("/analyze-and-generate", async (req, res) => {
   const { domain, questions, selectedAnswers, timeline } = req.body;
 
-  // Analysis of performance for the AI to tailor the roadmap
   const performanceData = questions.map((q, idx) => ({
     topic: q.question,
     status: q.answer.trim().toLowerCase() === (selectedAnswers[idx] || "").trim().toLowerCase() ? "Correct" : "Incorrect"
@@ -38,15 +37,59 @@ router.post("/analyze-and-generate", async (req, res) => {
     User is learning ${domain}. Timeline: ${timeline}.
     Quiz Results: ${JSON.stringify(performanceData)}.
     
-    Task: Generate a highly technical and specific learning roadmap in JSON format.
+    Task: Generate a highly technical and specific learning roadmap in JSON format with learning resources.
     - If they missed questions, prioritize those specific technical topics in Phase 1 and 2.
     - If they aced it, provide advanced project-based tasks.
     - Structure: A JSON array of phases. Each phase must contain exactly 28 technical task strings (4 tasks per day for 7 days).
+    - Each task should include learning platform suggestions: reference recommended platforms like Udemy, Coursera, LeetCode, Documentation, GitHub, YouTube, etc.
+    - Format each task as: "Task description - Resources: [Platform1, Platform2, Platform3]"
     - The number of phases must match the timeline (e.g., 3 months = 12 phases/weeks).
     
-    CRITICAL: Return ONLY a raw JSON array of arrays: [ ["Phase 1 Task 1", "Phase 1 Task 2"...], ["Phase 2 Task 1"...] ]
-    Do not include any introductory text or wrap it in a root object.
+    CRITICAL: Return ONLY a raw JSON array of arrays. Do not include text, Markdown, or wrapper objects.
   `;
+
+  const buildFallbackRoadmap = () => {
+    const timelineMonths = Number((timeline || "3 months").split(" ")[0]) || 3;
+    const phaseCount = Math.max(1, Math.min(48, timelineMonths * 4));
+    const resourceSet = ["Udemy", "Coursera", "YouTube", "GitHub", "Documentation", "LeetCode"];
+    const topicHint = domain.replace(/[-_]/g, ' ');
+
+    return Array.from({ length: phaseCount }, (_, phaseIndex) => {
+      return Array.from({ length: 28 }, (_, taskIndex) => {
+        const resourceSample = resourceSet[(phaseIndex + taskIndex) % resourceSet.length];
+        const taskNum = taskIndex + 1;
+        return `Week ${phaseIndex + 1} Task ${taskNum}: Study ${topicHint} concept ${taskNum} and practice with ${resourceSample} - Resources: [${resourceSample}]`;
+      });
+    });
+  };
+
+  const extractJson = (text) => {
+    if (!text || typeof text !== 'string') return null;
+
+    const cleaned = text.replace(/```(?:json)?/gi, '').trim();
+    try {
+      return JSON.parse(cleaned);
+    } catch (firstError) {
+      const arrayMatch = cleaned.match(/\[[\s\S]*\]/m);
+      if (arrayMatch) {
+        try {
+          return JSON.parse(arrayMatch[0]);
+        } catch (secondError) {
+          console.error('Second parse attempt failed:', secondError);
+        }
+      }
+    }
+    return null;
+  };
+
+  const timelineMonths = Number((timeline || "3 months").split(" ")[0]) || 3;
+  const expectedPhaseCount = Math.max(1, Math.min(48, timelineMonths * 4));
+
+  const isValidRoadmap = (value) => {
+    return Array.isArray(value) && value.length === expectedPhaseCount && value.every(
+      (phase) => Array.isArray(phase) && phase.length === 28 && phase.every((task) => typeof task === 'string')
+    );
+  };
 
   try {
     const completion = await groq.chat.completions.create({
@@ -55,14 +98,30 @@ router.post("/analyze-and-generate", async (req, res) => {
       temperature: 0.6,
     });
 
-    let content = completion.choices[0].message.content.replace(/```json/g, "").replace(/```/g, "").trim();
-    const roadmap = JSON.parse(content);
-    
-    // Ensure we send back an array to prevent .flat() crashes
-    res.json(Array.isArray(roadmap) ? roadmap : (roadmap.roadmap || []));
+    const rawContent = completion.choices[0].message.content;
+    const extracted = extractJson(rawContent);
+
+    let roadmap = extracted;
+
+    if (!isValidRoadmap(roadmap)) {
+      if (roadmap && typeof roadmap === 'object') {
+        if (isValidRoadmap(roadmap.roadmap)) roadmap = roadmap.roadmap;
+        else {
+          const nested = Object.values(roadmap).find((value) => isValidRoadmap(value));
+          if (nested) roadmap = nested;
+        }
+      }
+    }
+
+    if (!isValidRoadmap(roadmap)) {
+      console.warn('AI roadmap invalid for timeline, using fallback. Expected', expectedPhaseCount, 'phases. Got', Array.isArray(roadmap) ? roadmap.length : typeof roadmap);
+      roadmap = buildFallbackRoadmap();
+    }
+
+    return res.json(roadmap);
   } catch (error) {
     console.error("Roadmap AI Error:", error);
-    res.status(500).json({ error: "Failed to generate roadmap" });
+    return res.json(buildFallbackRoadmap());
   }
 });
 

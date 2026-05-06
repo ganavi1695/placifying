@@ -88,15 +88,15 @@ export default function ChatbotPage() {
   return (
     <div className="max-w-4xl mx-auto space-y-8 p-4">
       {/* Header */}
-      <div className="rounded-[2rem] border bg-gradient-to-br from-white to-blue-50 p-8 shadow-sm">
-        <h2 className="text-3xl font-semibold text-gray-800">AI Study Assistant</h2>
-        <p className="mt-2 text-gray-600">
+      <div className="rounded-[2rem] border border-slate-300 dark:border-slate-600 bg-gradient-to-br from-white dark:from-slate-800 to-blue-50 dark:to-slate-800 p-8 shadow-sm dark:shadow-slate-950/50">
+        <h2 className="text-3xl font-semibold text-gray-800 dark:text-slate-50">AI Study Assistant</h2>
+        <p className="mt-2 text-gray-600 dark:text-slate-400">
           Powered by Llama 3 • Focused on your CSE Curriculum
         </p>
       </div>
 
       {/* Chat Box */}
-      <div className="rounded-[2rem] border bg-white p-6 shadow-xl relative overflow-hidden">
+      <div className="rounded-[2rem] border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 p-6 shadow-xl dark:shadow-slate-950/50 relative overflow-hidden">
         <div className="flex flex-col h-[500px]">
 
           {/* Messages Container */}
@@ -109,8 +109,8 @@ export default function ChatbotPage() {
                 <div
                   className={`max-w-[80%] rounded-2xl px-5 py-3 shadow-sm ${
                     message.role === 'bot'
-                      ? 'bg-gray-100 text-gray-800 rounded-tl-none'
-                      : 'bg-teal-600 text-white rounded-tr-none'
+                      ? 'bg-gray-100 dark:bg-slate-700 text-gray-800 dark:text-slate-50 rounded-tl-none'
+                      : 'bg-teal-600 dark:bg-teal-600 text-white rounded-tr-none'
                   }`}
                 >
                   {/* Preserves line breaks from the AI response */}
@@ -122,7 +122,7 @@ export default function ChatbotPage() {
             {/* Typing Indicator */}
             {isLoading && (
               <div className="flex justify-start animate-pulse">
-                <div className="bg-gray-100 rounded-2xl rounded-tl-none px-5 py-3 text-gray-500 italic">
+                <div className="bg-gray-100 dark:bg-slate-700 rounded-2xl rounded-tl-none px-5 py-3 text-gray-500 dark:text-slate-400 italic">
                   ✦ Assistant is thinking...
                 </div>
               </div>
@@ -132,14 +132,14 @@ export default function ChatbotPage() {
           </div>
 
           {/* Input Area */}
-          <div className="flex gap-3 pt-6 border-t mt-4">
+          <div className="flex gap-3 pt-6 border-t border-slate-300 dark:border-slate-700 mt-4">
             <input
               value={draft}
               onChange={(e) => setDraft(e.target.value)}
               onKeyDown={handleKeyPress}
               placeholder={isLoading ? "Please wait..." : "Ask about DSA, React, Python..."}
               disabled={isLoading}
-              className="flex-1 rounded-2xl border border-gray-200 px-5 py-3 focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all"
+              className="flex-1 rounded-2xl border border-gray-200 dark:border-slate-600 bg-white dark:bg-slate-700 px-5 py-3 text-slate-900 dark:text-slate-50 placeholder-gray-500 dark:placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 dark:focus:ring-teal-400 transition-all"
             />
 
             <Button

@@ -57,12 +57,34 @@ export default function QuizPage() {
       });
 
       const roadmapData = await res.json();
-      
-      // Force data to be an array before saving to prevent .flat() errors
-      const finalPlan = Array.isArray(roadmapData) ? roadmapData : [];
-      
+      if (!res.ok) {
+        const message = roadmapData?.error || roadmapData?.msg || 'Roadmap generation failed';
+        throw new Error(message);
+      }
+
+      let finalPlan = [];
+      if (Array.isArray(roadmapData)) {
+        finalPlan = roadmapData;
+      } else if (roadmapData && typeof roadmapData === 'object') {
+        if (Array.isArray(roadmapData.roadmap)) {
+          finalPlan = roadmapData.roadmap;
+        } else if (Array.isArray(roadmapData.data)) {
+          finalPlan = roadmapData.data;
+        } else {
+          const nestedArray = Object.values(roadmapData).find((value) => Array.isArray(value));
+          if (Array.isArray(nestedArray)) finalPlan = nestedArray;
+        }
+      }
+
+      if (!Array.isArray(finalPlan) || finalPlan.length === 0) {
+        console.error('Invalid roadmap payload', roadmapData);
+        alert('Roadmap generation returned invalid data. Please try again.');
+        return;
+      }
+
       localStorage.setItem('roadmapPlan', JSON.stringify(finalPlan));
       localStorage.setItem('selectedDomain', domain);
+      localStorage.setItem('timeline', savedTimeline);
       localStorage.setItem('quizScore', score);
       localStorage.setItem("completedDays", JSON.stringify([]));
       localStorage.setItem("currentDay", "1");
@@ -70,7 +92,7 @@ export default function QuizPage() {
       navigate(`/roadmap/${domain}`);
     } catch (err) {
       console.error("Error generating roadmap", err);
-      alert("AI Roadmap generation failed. Please try again.");
+      alert(err.message || "AI Roadmap generation failed. Please try again.");
     } finally {
       setGeneratingRoadmap(false);
     }
@@ -78,11 +100,11 @@ export default function QuizPage() {
 
   if (!difficulty && !loading) {
     return (
-      <div className="max-w-2xl mx-auto p-10 text-center space-y-8 bg-white rounded-[2rem] border shadow-sm mt-10">
-        <h2 className="text-3xl font-bold">Select Assessment Difficulty</h2>
+      <div className="max-w-2xl mx-auto p-10 text-center space-y-8 bg-white dark:bg-slate-800 rounded-[2rem] border border-slate-300 dark:border-slate-600 shadow-sm dark:shadow-slate-950/50 mt-10">
+        <h2 className="text-3xl font-bold text-slate-900 dark:text-slate-50">Select Assessment Difficulty</h2>
         <div className="grid gap-4">
           {['Easy', 'Medium', 'Hard'].map((level) => (
-            <button key={level} onClick={() => fetchQuestions(level.toLowerCase())} className="p-5 text-xl font-semibold border-2 rounded-2xl hover:border-blue-500 hover:bg-blue-50 transition-all capitalize">
+            <button key={level} onClick={() => fetchQuestions(level.toLowerCase())} className="p-5 text-xl font-semibold border-2 rounded-2xl bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-50 border-slate-300 dark:border-slate-600 hover:border-blue-500 dark:hover:border-blue-400 hover:bg-blue-50 dark:hover:bg-slate-600 transition-all capitalize">
               {level}
             </button>
           ))}
@@ -95,23 +117,23 @@ export default function QuizPage() {
 
   return (
     <div className="max-w-4xl mx-auto p-4 space-y-6">
-      <div className="bg-white rounded-[2rem] p-8 border shadow-sm">
-        <h2 className="text-2xl font-bold capitalize mb-8">{domain.replace(/-/g, ' ')} Assessment</h2>
+      <div className="bg-white dark:bg-slate-800 rounded-[2rem] p-8 border border-slate-300 dark:border-slate-600 shadow-sm dark:shadow-slate-950/50">
+        <h2 className="text-2xl font-bold capitalize mb-8 text-slate-900 dark:text-slate-50">{domain.replace(/-/g, ' ')} Assessment</h2>
         
         <div className="space-y-8">
           {questions.map((q, idx) => (
-            <div key={idx} className="p-6 rounded-2xl bg-slate-50 border">
-              <p className="font-semibold text-lg mb-4">{idx + 1}. {q.question}</p>
+            <div key={idx} className="p-6 rounded-2xl bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600">
+              <p className="font-semibold text-lg mb-4 text-slate-900 dark:text-slate-50">{idx + 1}. {q.question}</p>
               <div className="grid gap-3 sm:grid-cols-2">
                 {q.options.map((opt) => {
                   const isCorrect = cleanStr(opt) === cleanStr(q.answer);
                   const isSelected = selected[idx] === opt;
                   
-                  let btnStyle = "bg-white border-slate-200";
-                  if (isSelected) btnStyle = "bg-blue-600 text-white border-blue-600";
+                  let btnStyle = "bg-white dark:bg-slate-600 border-slate-200 dark:border-slate-500 text-slate-900 dark:text-slate-50";
+                  if (isSelected) btnStyle = "bg-blue-600 dark:bg-blue-600 text-white border-blue-600 dark:border-blue-500";
                   if (submitted) {
-                    if (isCorrect) btnStyle = "bg-green-100 border-green-500 text-green-900 ring-2 ring-green-100";
-                    else if (isSelected && !isCorrect) btnStyle = "bg-red-100 border-red-500 text-red-900";
+                    if (isCorrect) btnStyle = "bg-green-100 dark:bg-green-900/30 border-green-500 dark:border-green-600 text-green-900 dark:text-green-200 ring-2 ring-green-100 dark:ring-green-900/50";
+                    else if (isSelected && !isCorrect) btnStyle = "bg-red-100 dark:bg-red-900/30 border-red-500 dark:border-red-600 text-red-900 dark:text-red-200";
                   }
 
                   return (

@@ -51,6 +51,9 @@ export default function LoginPage({ setUser, setIsProfileComplete }) {
       }
 
       setUser(loggedInUser);
+      if (loggedInUser.timeline) {
+        localStorage.setItem('timeline', loggedInUser.timeline);
+      }
       setIsProfileComplete(Boolean(loggedInUser.dob && loggedInUser.timeline));
 
       if (!loggedInUser.dob || !loggedInUser.timeline) {
@@ -66,11 +69,11 @@ export default function LoginPage({ setUser, setIsProfileComplete }) {
   };
 
   return (
-    <div className="mx-auto max-w-3xl space-y-8 rounded-[2rem] bg-gradient-to-br from-white to-blue-50 p-8 shadow-lg">
+    <div className="mx-auto max-w-3xl space-y-8 rounded-[2rem] bg-gradient-to-br from-white to-blue-50 p-8 shadow-lg dark:from-slate-800 dark:to-slate-800 dark:shadow-slate-950/50">
       
       <div>
-        <h2 className="text-3xl font-semibold">Login</h2>
-        <p className="text-gray-600">Enter your email and password</p>
+        <h2 className="text-3xl font-semibold text-slate-900 dark:text-slate-50">Login</h2>
+        <p className="text-gray-600 dark:text-slate-400">Enter your email and password</p>
       </div>
 
       <div className="space-y-4">
@@ -79,7 +82,7 @@ export default function LoginPage({ setUser, setIsProfileComplete }) {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           placeholder="Enter email"
-          className="w-full border px-4 py-3 rounded"
+          className="w-full border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-4 py-3 rounded text-slate-900 dark:text-slate-50 placeholder-slate-500 dark:placeholder-slate-400 outline-none focus:border-teal-500 dark:focus:border-teal-400"
         />
 
         <input
@@ -87,10 +90,10 @@ export default function LoginPage({ setUser, setIsProfileComplete }) {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           placeholder="Enter password"
-          className="w-full border px-4 py-3 rounded"
+          className="w-full border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-4 py-3 rounded text-slate-900 dark:text-slate-50 placeholder-slate-500 dark:placeholder-slate-400 outline-none focus:border-teal-500 dark:focus:border-teal-400"
         />
 
-        {error && <p className="text-red-600">{error}</p>}
+        {error && <p className="text-red-600 dark:text-red-400">{error}</p>}
 
         <Button onClick={handleLogin} className="w-full">
           Login

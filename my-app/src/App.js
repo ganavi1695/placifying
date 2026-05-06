@@ -52,6 +52,9 @@ function App() {
 
         const data = await res.json();
         setUser(data);
+        if (data.timeline) {
+          localStorage.setItem('timeline', data.timeline);
+        }
         setIsProfileComplete(Boolean(data.dob && data.timeline));
       } catch (err) {
         console.error(err);

@@ -12,6 +12,10 @@ backend/node_modules
 # production
 /build
 
+# cache files
+**/.cache
+**/*.cache
+
 # misc
 .DS_Store
 .env.local

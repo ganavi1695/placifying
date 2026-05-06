@@ -18,12 +18,16 @@ export default function RoadmapPage() {
     if (rawPlan) {
       try {
         const parsedPlan = JSON.parse(rawPlan);
-        // Only set the state if we actually have an array
-        if (Array.isArray(parsedPlan)) {
+        // Only set the state if we actually have a valid array with phases
+        if (Array.isArray(parsedPlan) && parsedPlan.length > 0) {
           setRoadmapPlan(parsedPlan);
+        } else {
+          console.warn('Invalid roadmap data format');
         }
       } catch (e) {
         console.error("Local storage parsing error", e);
+        // Clear corrupted data
+        localStorage.removeItem('roadmapPlan');
       }
     }
     setDomain(selectedDomain);

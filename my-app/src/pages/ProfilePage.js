@@ -73,6 +73,9 @@ export default function ProfilePage({ user, setUser, setIsProfileComplete }) {
       }
 
       setUser(data);
+      if (data.timeline) {
+        localStorage.setItem('timeline', data.timeline);
+      }
       setIsProfileComplete(true);
       setErrors({});
       setGeneralError('');
@@ -103,7 +106,7 @@ export default function ProfilePage({ user, setUser, setIsProfileComplete }) {
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Jessica Parker"
-              className="w-full rounded-3xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-teal-500 focus:bg-teal-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-50 dark:focus:border-teal-400"
+              className="w-full rounded-3xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-teal-500 focus:bg-teal-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-50 dark:focus:border-teal-400 dark:focus:bg-slate-700"
             />
             {errors.name && <p className="text-sm text-red-600 dark:text-red-400">{errors.name}</p>}
 
@@ -114,7 +117,7 @@ export default function ProfilePage({ user, setUser, setIsProfileComplete }) {
               type="date"
               value={dob}
               onChange={(e) => setDob(e.target.value)}
-              className="w-full rounded-3xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-teal-500 focus:bg-teal-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-50 dark:focus:border-teal-400"
+              className="w-full rounded-3xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-teal-500 focus:bg-teal-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-50 dark:focus:border-teal-400 dark:focus:bg-slate-700"
             />
             {errors.dob && <p className="text-sm text-red-600 dark:text-red-400">{errors.dob}</p>}
 
@@ -127,12 +130,12 @@ export default function ProfilePage({ user, setUser, setIsProfileComplete }) {
                 value={timelineValue}
                 onChange={(e) => setTimelineValue(e.target.value)}
                 placeholder="6"
-                className="flex-1 rounded-3xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-teal-500 focus:bg-teal-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-50 dark:focus:border-teal-400"
+                className="flex-1 rounded-3xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-teal-500 focus:bg-teal-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-50 dark:focus:border-teal-400 dark:focus:bg-slate-700"
               />
               <select
                 value={timelineUnit}
                 onChange={(e) => setTimelineUnit(e.target.value)}
-                className="rounded-3xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-teal-500 focus:bg-teal-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-50 dark:focus:border-teal-400"
+                className="rounded-3xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-teal-500 focus:bg-teal-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-50 dark:focus:border-teal-400 dark:focus:bg-slate-700"
               >
                 <option value="months">Months</option>
                 <option value="years">Years</option>

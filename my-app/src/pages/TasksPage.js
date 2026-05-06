@@ -228,14 +228,9 @@ localStorage.setItem("weeklyProgress", JSON.stringify(weeklyData));
           {/* Today's Tasks Section */}
           {tasks.filter(t => !t.isCarriedOver).length > 0 && (
             <div>
-              {(() => {
-                const incompleteCarriedOver = tasks.filter(t => t.isCarriedOver && !t.done);
-                return incompleteCarriedOver.length > 0 && (
-                  <h3 className="mb-3 text-sm font-semibold text-teal-700 dark:text-teal-300 flex items-center gap-2">
-                    <span>✨</span> Today's Tasks ({tasks.filter(t => !t.isCarriedOver).length})
-                  </h3>
-                );
-              })()}
+              <h3 className="mb-3 text-sm font-semibold text-teal-700 dark:text-teal-300 flex items-center gap-2">
+                <span>✨</span> Today's Tasks ({tasks.filter(t => !t.isCarriedOver).length})
+              </h3>
               <div className="space-y-3">
                 {tasks
                   .filter(task => !task.isCarriedOver)
